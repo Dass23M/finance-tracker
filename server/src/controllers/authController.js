@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const { seedDefaultCategories } = require('../utils/defaultCategories');
 const {
   generateAccessToken,
   generateRefreshToken,
@@ -24,6 +25,9 @@ const register = async (req, res, next) => {
 
     // Create user (password hashed via pre-save hook in model)
     const user = await User.create({ name, email, password });
+
+    // Seed default categories for new user
+    await seedDefaultCategories(user._id);
 
     // Generate tokens
     const accessToken = generateAccessToken(user._id);
