@@ -29,7 +29,7 @@ app.use('/api', limiter);
 app.use(
   cors({
     origin: process.env.CLIENT_URL,
-    credentials: true, // allow cookies
+    credentials: true,
   })
 );
 
@@ -48,8 +48,8 @@ app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'Server is running', env: process.env.NODE_ENV });
 });
 
-// API Routes — will add these in the next steps
- app.use('/api/auth', require('./src/routes/auth'));
+// API Routes
+app.use('/api/auth', require('./src/routes/auth'));
 // app.use('/api/transactions', require('./src/routes/transactions'));
 // app.use('/api/budgets', require('./src/routes/budgets'));
 // app.use('/api/categories', require('./src/routes/categories'));
