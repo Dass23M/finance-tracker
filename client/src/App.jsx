@@ -3,24 +3,25 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 
-import ProtectedRoute from './components/common/ProtectedRoute';
-import PublicRoute    from './components/common/PublicRoute';
-import Login          from './pages/auth/Login';
-import Register       from './pages/auth/Register';
+import ProtectedRoute   from './components/common/ProtectedRoute';
+import PublicRoute      from './components/common/PublicRoute';
+import DashboardLayout  from './components/layout/DashboardLayout';
+import Login            from './pages/auth/Login';
+import Register         from './pages/auth/Register';
+import Dashboard        from './pages/Dashboard';
+import Transactions from './pages/Transactions';
 
-// These pages will be added in the next steps
-// import DashboardLayout from './components/layout/DashboardLayout';
-// import Dashboard       from './pages/Dashboard';
-// import Transactions    from './pages/Transactions';
-// import Budgets         from './pages/Budgets';
-// import Categories      from './pages/Categories';
+// Placeholder pages — we build these in Steps 9 & 10
+
+const Budgets      = () => <div className="card"><p className="text-gray-500">Budgets — coming in Step 10</p></div>;
+const Categories   = () => <div className="card"><p className="text-gray-500">Categories — coming in Step 10</p></div>;
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry:              1,
       refetchOnWindowFocus: false,
-      staleTime:          5 * 60 * 1000, // 5 minutes
+      staleTime:          5 * 60 * 1000,
     },
   },
 });
@@ -32,31 +33,28 @@ const App = () => {
         <BrowserRouter>
           <Routes>
 
-            {/* Public routes — redirect to dashboard if logged in */}
+            {/* Public routes */}
             <Route element={<PublicRoute />}>
               <Route path="/login"    element={<Login />}    />
               <Route path="/register" element={<Register />} />
             </Route>
 
-            {/* Protected routes — redirect to login if not logged in */}
+            {/* Protected routes */}
             <Route element={<ProtectedRoute />}>
-              {/* Layout + pages will be added in Step 8 */}
-              {/* <Route element={<DashboardLayout />}>
+              <Route element={<DashboardLayout />}>
                 <Route path="/dashboard"    element={<Dashboard />}    />
                 <Route path="/transactions" element={<Transactions />} />
                 <Route path="/budgets"      element={<Budgets />}      />
                 <Route path="/categories"   element={<Categories />}   />
-              </Route> */}
+              </Route>
             </Route>
 
-            {/* Default redirect */}
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="*" element={<Navigate to="/login"    replace />} />
+            <Route path="/"  element={<Navigate to="/dashboard" replace />} />
+            <Route path="*"  element={<Navigate to="/login"     replace />} />
 
           </Routes>
         </BrowserRouter>
 
-        {/* Global toast notifications */}
         <Toaster
           position="top-right"
           toastOptions={{
