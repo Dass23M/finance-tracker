@@ -12,6 +12,7 @@ import Dashboard       from './pages/Dashboard';
 import Transactions    from './pages/Transactions';
 import Budgets         from './pages/Budgets';
 import Categories      from './pages/Categories';
+import Landing from './pages/Landing';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -46,7 +47,7 @@ const App = () => {
               </Route>
             </Route>
 
-            <Route path="/"  element={<Navigate to="/dashboard" replace />} />
+            <Route path="/" element={<Landing />} />
             <Route path="*"  element={<Navigate to="/login"     replace />} />
 
           </Routes>
