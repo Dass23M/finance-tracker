@@ -1,786 +1,340 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-// ── Tiny hook: reveal elements on scroll ──────────────────
 const useScrollReveal = () => {
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('revealed');
-            observer.unobserve(entry.target);
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add('revealed');
+            observer.unobserve(e.target);
           }
         });
       },
-      { threshold: 0.12 }
+      { threshold: 0.1 }
     );
     document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
     return () => observer.disconnect();
   }, []);
 };
 
-// ── Data ──────────────────────────────────────────────────
+// Custom SVG Icons for a professional look
+const Icons = {
+  Dashboard: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="9" rx="1" />
+      <rect x="14" y="3" width="7" height="5" rx="1" />
+      <rect x="14" y="12" width="7" height="9" rx="1" />
+      <rect x="3" y="16" width="7" height="5" rx="1" />
+    </svg>
+  ),
+  Transactions: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 3v18" /><path d="m22 8-5-5-5 5" /><path d="M7 21V3" /><path d="m2 16 5 5 5-5" />
+    </svg>
+  ),
+  Budget: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" />
+    </svg>
+  ),
+  Categories: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9.586 5.586A2 2 0 0 0 8.172 5H3a1 1 0 0 0-1 1v5.172a2 2 0 0 0 .586 1.414l8.204 8.204a2.426 2.426 0 0 0 3.42 0l3.584-3.584a2.426 2.426 0 0 0 0-3.42z" />
+      <circle cx="6.5" cy="9.5" r=".5" fill="currentColor" />
+    </svg>
+  ),
+  Insights: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
+    </svg>
+  ),
+  Secure: () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="m9 12 2 2 4-4" />
+    </svg>
+  ),
+};
+
 const features = [
-  {
-    icon: '📊',
-    title: 'Smart Dashboard',
-    description:
-      'Get a bird's-eye view of your finances with live charts, balance summaries, and monthly trend analysis — all in one place.',
-  },
-  {
-    icon: '💸',
-    title: 'Transaction Tracking',
-    description:
-      'Log income and expenses with categories, dates, and notes. Filter by type, date range, or search — find anything instantly.',
-  },
-  {
-    icon: '🎯',
-    title: 'Budget Management',
-    description:
-      'Set monthly spending limits per category. Get real-time progress bars and instant alerts when you're approaching your limit.',
-  },
-  {
-    icon: '🏷️',
-    title: 'Custom Categories',
-    description:
-      'Organise transactions your way. Default categories get you started immediately; custom ones let you personalise completely.',
-  },
-  {
-    icon: '📈',
-    title: 'Visual Insights',
-    description:
-      'Three interactive charts — expense distribution, monthly income vs expenses, and budget vs actual spending — tell your full financial story.',
-  },
-  {
-    icon: '🔒',
-    title: 'Secure by Default',
-    description:
-      'JWT access + refresh tokens, bcrypt password hashing, HTTP-only cookies, rate limiting, and Helmet security headers out of the box.',
-  },
+  { icon: <Icons.Dashboard />, color: '#f0f9ff', iconColor: '#0ea5e9', title: 'Smart Dashboard', description: "Bird's-eye view of your finances with live charts, balance summaries, and monthly trend analysis all in one place." },
+  { icon: <Icons.Transactions />, color: '#f8fafc', iconColor: '#0f172a', title: 'Transaction Tracking', description: 'Log income and expenses with categories, dates, and notes. Filter, sort, and paginate — find any transaction instantly.' },
+  { icon: <Icons.Budget />, color: '#f0f9ff', iconColor: '#0ea5e9', title: 'Budget Management', description: "Set monthly spending limits per category. Real-time progress bars and instant alerts when you're approaching limits." },
+  { icon: <Icons.Categories />, color: '#f8fafc', iconColor: '#0f172a', title: 'Custom Categories', description: 'Organise transactions your way. 13 default categories get you started; add your own to personalise completely.' },
+  { icon: <Icons.Insights />, color: '#f0f9ff', iconColor: '#0ea5e9', title: 'Visual Insights', description: 'Three interactive charts — expense distribution, monthly income vs expenses, and budget vs actual spending.' },
+  { icon: <Icons.Secure />, color: '#f8fafc', iconColor: '#0f172a', title: 'Secure by Default', description: 'JWT access + refresh tokens, bcrypt hashing, HTTP-only cookies, rate limiting, and Helmet security headers.' },
 ];
 
 const stack = [
-  { label: 'React',       color: '#61dafb' },
-  { label: 'Node.js',     color: '#84cc16' },
-  { label: 'Express.js',  color: '#94a3b8' },
-  { label: 'MongoDB',     color: '#22c55e' },
-  { label: 'Tailwind CSS',color: '#38bdf8' },
-  { label: 'Recharts',    color: '#a78bfa' },
-  { label: 'JWT Auth',    color: '#fbbf24' },
-  { label: 'REST API',    color: '#fb923c' },
+  { label: 'React', dot: '#0ea5e9' },
+  { label: 'Express.js', dot: '#0f172a' },
+  { label: 'MongoDB Atlas', dot: '#0ea5e9' },
+  { label: 'Node.js', dot: '#0f172a' },
+  { label: 'Tailwind CSS', dot: '#0ea5e9' },
+  { label: 'Recharts', dot: '#0f172a' },
+  { label: 'JWT Auth', dot: '#0ea5e9' },
+  { label: 'REST API', dot: '#0f172a' },
 ];
 
 const stats = [
   { value: '20+', label: 'API Endpoints' },
-  { value: '4',   label: 'Core Pages'    },
-  { value: '13',  label: 'Default Categories' },
-  { value: '3',   label: 'Live Charts'   },
+  { value: '4', label: 'Core Pages' },
+  { value: '13', label: 'Default Categories' },
+  { value: '3', label: 'Live Charts' },
 ];
 
-// ── Component ─────────────────────────────────────────────
+const howItWorks = [
+  { step: '01', title: 'Create an account', desc: 'Register in seconds. Default categories seeded automatically so you can start immediately.' },
+  { step: '02', title: 'Log your transactions', desc: 'Add income and expenses with categories, amounts, dates, and optional notes.' },
+  { step: '03', title: 'Set spending budgets', desc: 'Define monthly limits per category and track real-time progress against them.' },
+  { step: '04', title: 'Read your insights', desc: 'Use dashboard charts to understand your spending habits and improve over time.' },
+];
+
 const Landing = () => {
   useScrollReveal();
 
   return (
     <>
-      {/* ── Global styles injected once ── */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap');
 
-        :root {
-          --bg:        #080c14;
-          --bg2:       #0d1322;
-          --bg3:       #111827;
-          --border:    rgba(99,102,241,0.18);
-          --primary:   #6366f1;
-          --primary-l: #818cf8;
-          --gold:      #f59e0b;
-          --gold-l:    #fbbf24;
-          --text:      #f1f5f9;
-          --muted:     #94a3b8;
-          --card-bg:   rgba(17,24,39,0.7);
-        }
+        .lp { font-family: 'Inter', sans-serif; background: #ffffff; color: #0f172a; overflow-x: hidden; min-height: 100vh; }
+        .lp * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .landing * { box-sizing: border-box; }
+        .lp-grad { color: #0ea5e9; }
+        .lp-display { font-family: 'Outfit', sans-serif; font-weight: 800; line-height: 1.1; letter-spacing: -0.03em; }
+        .lp-heading { font-family: 'Outfit', sans-serif; font-weight: 700; letter-spacing: -0.02em; }
 
-        .landing {
-          font-family: 'DM Sans', sans-serif;
-          background: var(--bg);
-          color: var(--text);
-          min-height: 100vh;
-          overflow-x: hidden;
-        }
+        .reveal { opacity: 0; transform: translateY(28px); transition: opacity .65s ease, transform .65s ease; }
+        .reveal.revealed { opacity: 1; transform: none; }
+        .reveal-d1 { transition-delay: .08s; } .reveal-d2 { transition-delay: .16s; } .reveal-d3 { transition-delay: .24s; } .reveal-d4 { transition-delay: .32s; } .reveal-d5 { transition-delay: .40s; }
 
-        /* ── typography ── */
-        .display {
-          font-family: 'Syne', sans-serif;
-          font-weight: 800;
-          line-height: 1.05;
-          letter-spacing: -0.03em;
-        }
-        .heading {
-          font-family: 'Syne', sans-serif;
-          font-weight: 700;
-          letter-spacing: -0.02em;
-        }
+        /* NAV */
+        .lp-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 0 40px; height: 72px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid #f1f5f9; }
+        .lp-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; color: #000000; }
+        .lp-logo-icon { width: 36px; height: 36px; background: #000000; color: #ffffff; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .lp-logo-text { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 19px; letter-spacing: -0.02em; }
+        .lp-nav-links { display: flex; align-items: center; gap: 8px; }
+        .lp-nav-a { text-decoration: none; font-size: 14px; font-weight: 500; color: #475569; padding: 8px 16px; border-radius: 8px; transition: all .2s; }
+        .lp-nav-a:hover { color: #000000; background: #f8fafc; }
+        .lp-nav-signin { color: #0f172a; border: 1px solid #e2e8f0; }
+        .lp-nav-signin:hover { border-color: #0f172a; background: #ffffff; }
+        .lp-nav-cta { background: #0ea5e9; color: #fff !important; font-weight: 600; }
+        .lp-nav-cta:hover { background: #0284c7; transform: translateY(-1px); }
 
-        /* ── gradient text ── */
-        .gradient-text {
-          background: linear-gradient(135deg, var(--primary-l) 0%, var(--gold-l) 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
+        /* HERO */
+        .lp-hero { position: relative; padding: 160px 24px 80px; text-align: center; overflow: hidden; background: #ffffff; }
+        .lp-hero::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(#e2e8f0 1px, transparent 1px); background-size: 32px 32px; opacity: 0.5; pointer-events: none; }
+        .lp-hero-inner { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; }
+        .lp-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; border-radius: 100px; background: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1; font-size: 13px; font-weight: 600; margin-bottom: 32px; }
+        .lp-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #0ea5e9; animation: lp-pulse 2s infinite; }
+        @keyframes lp-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: .5; } }
+        .lp-hero-title { font-size: clamp(46px, 7vw, 84px); color: #000000; margin-bottom: 24px; }
+        .lp-hero-sub { font-size: clamp(16px, 2.2vw, 19px); color: #475569; max-width: 580px; margin: 0 auto 48px; line-height: 1.6; font-weight: 400; }
+        .lp-btn-row { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-bottom: 80px; }
+        .lp-btn { display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; border-radius: 10px; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 15px; text-decoration: none; transition: all .2s ease; cursor: pointer; border: none; }
+        .lp-btn-primary { background: #000000; color: #ffffff; box-shadow: 0 4px 14px rgba(0,0,0,0.15); }
+        .lp-btn-primary:hover { background: #0ea5e9; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(14, 165, 233, 0.25); }
+        .lp-btn-outline { background: #ffffff; color: #0f172a; border: 1px solid #cbd5e1; }
+        .lp-btn-outline:hover { border-color: #0ea5e9; color: #0ea5e9; transform: translateY(-2px); }
 
-        /* ── noise overlay on hero ── */
-        .noise::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-          pointer-events: none;
-          z-index: 0;
-        }
+        /* MOCKUP */
+        .lp-mockup { max-width: 900px; margin: 0 auto; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 20px 40px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.02); background: #ffffff; }
+        .lp-mockup-bar { background: #f8fafc; padding: 12px 20px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #e2e8f0; }
+        .lp-mockup-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .lp-mockup-url { flex: 1; margin: 0 16px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px 12px; font-size: 12px; color: #94a3b8; font-family: monospace; text-align: center; }
+        .lp-mockup-body { background: #f8fafc; padding: 24px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+        .lp-mc { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; }
+        .lp-mc-label { font-size: 12px; color: #64748b; margin-bottom: 8px; font-weight: 500; }
+        .lp-mc-value { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 22px; color: #000000; }
+        .lp-mc-sub { font-size: 12px; margin-top: 6px; }
+        .lp-mc-wide { grid-column: span 2; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px; }
+        .lp-bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .lp-bar-name { font-size: 12px; color: #475569; width: 64px; font-weight: 500; }
+        .lp-bar-track { flex: 1; height: 6px; background: #f1f5f9; border-radius: 99px; overflow: hidden; }
+        .lp-bar-fill { height: 100%; border-radius: 99px; }
+        .lp-bar-pct { font-size: 12px; color: #64748b; width: 32px; text-align: right; }
 
-        /* ── grid bg ── */
-        .grid-bg {
-          background-image:
-            linear-gradient(var(--border) 1px, transparent 1px),
-            linear-gradient(90deg, var(--border) 1px, transparent 1px);
-          background-size: 60px 60px;
-        }
+        /* STATS */
+        .lp-stats { background: #ffffff; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: center; flex-wrap: wrap; }
+        .lp-stat { text-align: center; padding: 40px 64px; border-right: 1px solid #f1f5f9; }
+        .lp-stat:last-child { border-right: none; }
+        .lp-stat-val { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 40px; color: #000000; line-height: 1; margin-bottom: 8px; }
+        .lp-stat-label { font-size: 14px; color: #64748b; font-weight: 500; }
 
-        /* ── glow orbs ── */
-        .orb {
-          position: absolute;
-          border-radius: 50%;
-          filter: blur(120px);
-          pointer-events: none;
-        }
-        .orb-1 {
-          width: 600px; height: 600px;
-          background: rgba(99,102,241,0.15);
-          top: -200px; left: -100px;
-        }
-        .orb-2 {
-          width: 500px; height: 500px;
-          background: rgba(245,158,11,0.08);
-          top: 100px; right: -150px;
-        }
+        /* SECTION */
+        .lp-sec { max-width: 1160px; margin: 0 auto; padding: 100px 24px; }
+        .lp-sec-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: #0ea5e9; margin-bottom: 20px; }
+        .lp-sec-title { font-size: clamp(32px, 4vw, 48px); color: #000000; margin-bottom: 16px; }
+        .lp-sec-sub { font-size: 17px; color: #475569; line-height: 1.7; max-width: 560px; font-weight: 400; }
 
-        /* ── scroll reveal ── */
-        .reveal {
-          opacity: 0;
-          transform: translateY(32px);
-          transition: opacity 0.7s ease, transform 0.7s ease;
-        }
-        .reveal.revealed {
-          opacity: 1;
-          transform: none;
-        }
-        .reveal-d1 { transition-delay: 0.1s; }
-        .reveal-d2 { transition-delay: 0.2s; }
-        .reveal-d3 { transition-delay: 0.3s; }
-        .reveal-d4 { transition-delay: 0.4s; }
-        .reveal-d5 { transition-delay: 0.5s; }
+        /* FEATURES */
+        .lp-feat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-top: 64px; }
+        .lp-feat-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 32px; transition: all .2s ease; }
+        .lp-feat-card:hover { border-color: #0ea5e9; box-shadow: 0 12px 32px rgba(14, 165, 233, 0.05); transform: translateY(-4px); }
+        .lp-feat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
+        .lp-feat-title { font-size: 18px; font-weight: 700; font-family: 'Outfit', sans-serif; color: #000000; margin-bottom: 12px; }
+        .lp-feat-desc { font-size: 14px; color: #475569; line-height: 1.7; }
 
-        /* ── buttons ── */
-        .btn-cta {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 14px 28px;
-          border-radius: 14px;
-          font-family: 'Syne', sans-serif;
-          font-weight: 700;
-          font-size: 15px;
-          letter-spacing: -0.01em;
-          transition: all 0.25s ease;
-          cursor: pointer;
-          border: none;
-          text-decoration: none;
-        }
-        .btn-cta-primary {
-          background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%);
-          color: #fff;
-          box-shadow: 0 0 32px rgba(99,102,241,0.35);
-        }
-        .btn-cta-primary:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 0 48px rgba(99,102,241,0.55);
-        }
-        .btn-cta-outline {
-          background: transparent;
-          color: var(--text);
-          border: 1.5px solid var(--border);
-          backdrop-filter: blur(10px);
-        }
-        .btn-cta-outline:hover {
-          border-color: var(--primary-l);
-          color: var(--primary-l);
-          transform: translateY(-2px);
-        }
+        /* HOW IT WORKS */
+        .lp-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; margin-top: 64px; }
+        .lp-step { padding: 32px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; }
+        .lp-step-num { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 48px; color: #f1f5f9; line-height: 1; margin-bottom: 20px; transition: color .3s; }
+        .lp-step:hover .lp-step-num { color: #0ea5e9; }
+        .lp-step-title { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 18px; color: #000000; margin-bottom: 10px; }
+        .lp-step-desc { font-size: 14px; color: #475569; line-height: 1.6; }
 
-        /* ── nav ── */
-        .nav {
-          position: fixed;
-          top: 0; left: 0; right: 0;
-          z-index: 100;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 18px 40px;
-          background: rgba(8,12,20,0.7);
-          backdrop-filter: blur(20px);
-          border-bottom: 1px solid var(--border);
-        }
-        .nav-logo {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          font-family: 'Syne', sans-serif;
-          font-weight: 800;
-          font-size: 18px;
-          color: var(--text);
-          text-decoration: none;
-        }
-        .nav-logo-icon {
-          width: 36px; height: 36px;
-          background: linear-gradient(135deg, var(--primary), #4f46e5);
-          border-radius: 10px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 18px;
-        }
-        .nav-links {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-        .nav-link {
-          color: var(--muted);
-          text-decoration: none;
-          font-size: 14px;
-          font-weight: 500;
-          padding: 8px 16px;
-          border-radius: 10px;
-          transition: all 0.2s;
-        }
-        .nav-link:hover { color: var(--text); background: rgba(255,255,255,0.05); }
-        .nav-link-cta {
-          background: linear-gradient(135deg, var(--primary), #4f46e5);
-          color: #fff !important;
-          font-family: 'Syne', sans-serif;
-          font-weight: 700;
-          box-shadow: 0 0 20px rgba(99,102,241,0.3);
-        }
-        .nav-link-cta:hover {
-          box-shadow: 0 0 32px rgba(99,102,241,0.5);
-          transform: translateY(-1px);
-        }
+        /* STACK */
+        .lp-stack-bg { background: #f8fafc; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; padding: 100px 24px; }
+        .lp-stack-inner { max-width: 1160px; margin: 0 auto; text-align: center; }
+        .lp-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 48px; }
+        .lp-chip { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 100px; background: #ffffff; border: 1px solid #e2e8f0; font-size: 14px; font-weight: 500; color: #0f172a; transition: all .2s; }
+        .lp-chip:hover { border-color: #0ea5e9; color: #0ea5e9; }
+        .lp-chip-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        
+        /* CTA */
+        .lp-cta { background: #ffffff; padding: 120px 24px; text-align: center; }
+        .lp-cta-inner { max-width: 640px; margin: 0 auto; padding: 64px 40px; background: #0f172a; border-radius: 24px; color: #ffffff; }
+        .lp-cta-title { font-size: clamp(32px, 5vw, 48px); color: #ffffff; margin-bottom: 20px; }
+        .lp-cta-sub { font-size: 17px; color: #94a3b8; line-height: 1.7; margin-bottom: 40px; font-weight: 400; }
+        .lp-cta .lp-btn-primary { background: #ffffff; color: #000000; }
+        .lp-cta .lp-btn-primary:hover { background: #0ea5e9; color: #ffffff; }
+        .lp-cta .lp-btn-outline { background: transparent; color: #ffffff; border-color: #334155; }
+        .lp-cta .lp-btn-outline:hover { border-color: #ffffff; }
 
-        /* ── hero ── */
-        .hero {
-          position: relative;
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          text-align: center;
-          padding: 140px 24px 100px;
-          overflow: hidden;
-        }
-        .hero-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 8px 16px;
-          border-radius: 100px;
-          border: 1px solid rgba(99,102,241,0.35);
-          background: rgba(99,102,241,0.08);
-          color: var(--primary-l);
-          font-size: 13px;
-          font-weight: 500;
-          margin-bottom: 32px;
-        }
-        .hero-badge-dot {
-          width: 6px; height: 6px;
-          border-radius: 50%;
-          background: var(--primary-l);
-          animation: pulse-dot 2s infinite;
-        }
-        @keyframes pulse-dot {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50%       { opacity: 0.5; transform: scale(1.4); }
-        }
-        .hero-title {
-          font-size: clamp(48px, 8vw, 88px);
-          margin: 0 0 24px;
-          max-width: 900px;
-        }
-        .hero-sub {
-          font-size: clamp(16px, 2.5vw, 20px);
-          color: var(--muted);
-          max-width: 560px;
-          line-height: 1.7;
-          margin: 0 auto 48px;
-          font-weight: 300;
-        }
-        .hero-cta-row {
-          display: flex;
-          gap: 14px;
-          justify-content: center;
-          flex-wrap: wrap;
-          margin-bottom: 80px;
-        }
+        /* FOOTER */
+        .lp-footer { background: #ffffff; border-top: 1px solid #e2e8f0; padding: 32px 40px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+        .lp-footer-left { display: flex; align-items: center; gap: 12px; }
+        .lp-footer-logo { width: 28px; height: 28px; background: #000000; color: #ffffff; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .lp-footer-name { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 15px; color: #000000; }
+        .lp-footer-right { display: flex; gap: 12px; flex-wrap: wrap; }
+        .lp-footer-tag { font-size: 13px; color: #64748b; font-weight: 500; }
 
-        /* ── stats strip ── */
-        .stats-strip {
-          display: flex;
-          gap: 48px;
-          justify-content: center;
-          flex-wrap: wrap;
-          padding: 32px 40px;
-          border-top: 1px solid var(--border);
-          border-bottom: 1px solid var(--border);
-          background: rgba(17,24,39,0.5);
-          backdrop-filter: blur(10px);
+        @media(max-width: 768px) {
+          .lp-nav { padding: 0 20px; }
+          .lp-mockup-body { grid-template-columns: repeat(2, 1fr); }
+          .lp-mc-wide { grid-column: span 2; }
+          .lp-stat { padding: 32px; border-right: none; border-bottom: 1px solid #f1f5f9; width: 50%; }
+          .lp-stat:nth-child(even) { border-right: none; }
+          .lp-stat:nth-child(odd) { border-right: 1px solid #f1f5f9; }
+          .lp-footer { flex-direction: column; text-align: center; }
+          .lp-footer-right { justify-content: center; }
         }
-        .stat-item { text-align: center; }
-        .stat-value {
-          font-family: 'Syne', sans-serif;
-          font-weight: 800;
-          font-size: 32px;
-          background: linear-gradient(135deg, var(--primary-l), var(--gold-l));
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-        .stat-label {
-          font-size: 13px;
-          color: var(--muted);
-          margin-top: 4px;
-        }
-
-        /* ── section ── */
-        .section {
-          padding: 100px 24px;
-          max-width: 1200px;
-          margin: 0 auto;
-        }
-        .section-label {
-          font-size: 12px;
-          font-weight: 600;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          color: var(--primary-l);
-          margin-bottom: 12px;
-        }
-        .section-title {
-          font-size: clamp(30px, 4vw, 46px);
-          margin: 0 0 16px;
-        }
-        .section-sub {
-          color: var(--muted);
-          font-size: 17px;
-          line-height: 1.7;
-          max-width: 540px;
-          font-weight: 300;
-        }
-
-        /* ── feature cards ── */
-        .features-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-          gap: 20px;
-          margin-top: 60px;
-        }
-        .feature-card {
-          background: var(--card-bg);
-          border: 1px solid var(--border);
-          border-radius: 20px;
-          padding: 32px;
-          backdrop-filter: blur(10px);
-          transition: all 0.3s ease;
-          position: relative;
-          overflow: hidden;
-        }
-        .feature-card::before {
-          content: '';
-          position: absolute;
-          top: 0; left: 0; right: 0;
-          height: 1px;
-          background: linear-gradient(90deg, transparent, var(--primary), transparent);
-          opacity: 0;
-          transition: opacity 0.3s;
-        }
-        .feature-card:hover {
-          border-color: rgba(99,102,241,0.4);
-          transform: translateY(-4px);
-          box-shadow: 0 24px 48px rgba(0,0,0,0.3);
-        }
-        .feature-card:hover::before { opacity: 1; }
-        .feature-icon {
-          font-size: 32px;
-          margin-bottom: 20px;
-          display: block;
-        }
-        .feature-title {
-          font-size: 18px;
-          font-weight: 700;
-          margin: 0 0 10px;
-          font-family: 'Syne', sans-serif;
-        }
-        .feature-desc {
-          font-size: 14px;
-          color: var(--muted);
-          line-height: 1.7;
-          font-weight: 300;
-        }
-
-        /* ── stack badges ── */
-        .stack-grid {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 12px;
-          margin-top: 40px;
-        }
-        .stack-badge {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 10px 18px;
-          border-radius: 100px;
-          border: 1px solid var(--border);
-          background: var(--card-bg);
-          font-size: 14px;
-          font-weight: 500;
-          backdrop-filter: blur(10px);
-          transition: all 0.2s;
-        }
-        .stack-badge:hover {
-          border-color: rgba(255,255,255,0.2);
-          transform: translateY(-2px);
-        }
-        .stack-dot {
-          width: 8px; height: 8px;
-          border-radius: 50%;
-          flex-shrink: 0;
-        }
-
-        /* ── CTA section ── */
-        .cta-section {
-          position: relative;
-          padding: 100px 24px;
-          text-align: center;
-          overflow: hidden;
-          background: var(--bg2);
-          border-top: 1px solid var(--border);
-          border-bottom: 1px solid var(--border);
-        }
-        .cta-orb {
-          position: absolute;
-          width: 800px; height: 800px;
-          border-radius: 50%;
-          background: radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%);
-          top: 50%; left: 50%;
-          transform: translate(-50%, -50%);
-          pointer-events: none;
-        }
-        .cta-title {
-          font-size: clamp(32px, 5vw, 56px);
-          margin: 0 0 20px;
-          position: relative;
-          z-index: 1;
-        }
-        .cta-sub {
-          color: var(--muted);
-          font-size: 17px;
-          max-width: 500px;
-          margin: 0 auto 40px;
-          font-weight: 300;
-          line-height: 1.7;
-          position: relative;
-          z-index: 1;
-        }
-        .cta-btn-row {
-          display: flex;
-          gap: 14px;
-          justify-content: center;
-          flex-wrap: wrap;
-          position: relative;
-          z-index: 1;
-        }
-
-        /* ── footer ── */
-        .footer {
-          padding: 40px 40px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          flex-wrap: wrap;
-          gap: 16px;
-          border-top: 1px solid var(--border);
-        }
-        .footer-text {
-          font-size: 13px;
-          color: var(--muted);
-        }
-        .footer-stack {
-          display: flex;
-          gap: 6px;
-          font-size: 12px;
-          color: var(--muted);
-          align-items: center;
-          flex-wrap: wrap;
-        }
-        .footer-tag {
-          padding: 3px 10px;
-          border-radius: 100px;
-          background: rgba(99,102,241,0.1);
-          border: 1px solid rgba(99,102,241,0.2);
-          color: var(--primary-l);
-          font-size: 11px;
-          font-weight: 500;
-        }
-
-        /* ── hero mockup preview ── */
-        .mockup {
-          position: relative;
-          max-width: 880px;
-          margin: 0 auto;
-          border-radius: 20px;
-          overflow: hidden;
-          border: 1px solid var(--border);
-          box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(99,102,241,0.1);
-        }
-        .mockup-bar {
-          background: rgba(17,24,39,0.95);
-          padding: 12px 20px;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          border-bottom: 1px solid var(--border);
-        }
-        .mockup-dot {
-          width: 10px; height: 10px;
-          border-radius: 50%;
-        }
-        .mockup-url {
-          flex: 1;
-          margin: 0 16px;
-          background: rgba(255,255,255,0.05);
-          border-radius: 6px;
-          padding: 4px 12px;
-          font-size: 12px;
-          color: var(--muted);
-          font-family: monospace;
-        }
-        .mockup-body {
-          background: #0d1322;
-          padding: 24px;
-          min-height: 320px;
-          display: grid;
-          grid-template-columns: 1fr 1fr 1fr 1fr;
-          gap: 16px;
-        }
-        .mock-card {
-          background: rgba(255,255,255,0.04);
-          border: 1px solid var(--border);
-          border-radius: 14px;
-          padding: 18px;
-        }
-        .mock-card-label {
-          font-size: 11px;
-          color: var(--muted);
-          margin-bottom: 8px;
-        }
-        .mock-card-value {
-          font-family: 'Syne', sans-serif;
-          font-weight: 800;
-          font-size: 20px;
-        }
-        .mock-bar-wrap {
-          grid-column: span 2;
-          background: rgba(255,255,255,0.04);
-          border: 1px solid var(--border);
-          border-radius: 14px;
-          padding: 18px;
-        }
-        .mock-bar-label {
-          font-size: 11px;
-          color: var(--muted);
-          margin-bottom: 16px;
-        }
-        .mock-bar-row {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          margin-bottom: 12px;
-        }
-        .mock-bar-name { font-size: 11px; color: var(--muted); width: 60px; }
-        .mock-bar-track {
-          flex: 1;
-          height: 6px;
-          background: rgba(255,255,255,0.08);
-          border-radius: 99px;
-          overflow: hidden;
-        }
-        .mock-bar-fill {
-          height: 100%;
-          border-radius: 99px;
-        }
-
-        @media (max-width: 768px) {
-          .nav { padding: 16px 20px; }
-          .mockup-body { grid-template-columns: 1fr 1fr; }
-          .mock-bar-wrap { grid-column: span 2; }
-          .stats-strip { gap: 32px; padding: 24px; }
-          .footer { flex-direction: column; text-align: center; }
-        }
-
-        @media (max-width: 480px) {
-          .mockup-body { display: none; }
-          .nav-links .nav-link:not(.nav-link-cta) { display: none; }
+        @media(max-width: 540px) {
+          .lp-nav-a:not(.lp-nav-cta):not(.lp-nav-signin) { display: none; }
+          .lp-stat { width: 100%; border-right: none !important; }
         }
       `}</style>
 
-      <div className="landing">
-
-        {/* ── Navbar ── */}
-        <nav className="nav">
-          <a href="#" className="nav-logo">
-            <div className="nav-logo-icon">💰</div>
-            FinanceTracker
+      <div className="lp">
+        {/* NAV */}
+        <nav className="lp-nav">
+          <a href="/" className="lp-logo">
+            <div className="lp-logo-icon">
+              <Icons.Insights />
+            </div>
+            <span className="lp-logo-text">FinanceTracker</span>
           </a>
-          <div className="nav-links">
-            <a href="#features" className="nav-link">Features</a>
-            <a href="#stack"    className="nav-link">Stack</a>
-            <Link to="/login"    className="nav-link">Sign In</Link>
-            <Link to="/register" className="nav-link nav-link-cta">Get Started</Link>
+          <div className="lp-nav-links">
+            <a href="#features" className="lp-nav-a">Features</a>
+            <a href="#how" className="lp-nav-a">How it works</a>
+            <a href="#stack" className="lp-nav-a">Tech</a>
+            <Link to="/login" className="lp-nav-a lp-nav-signin">Sign In</Link>
+            <Link to="/register" className="lp-nav-a lp-nav-cta">Get Started</Link>
           </div>
         </nav>
 
-        {/* ── Hero ── */}
-        <section className="hero grid-bg noise">
-          <div className="orb orb-1" />
-          <div className="orb orb-2" />
-
-          {/* Content above mockup */}
-          <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: '900px' }}>
-            <div className="hero-badge">
-              <span className="hero-badge-dot" />
-              Full-Stack Personal Finance App
+        {/* HERO */}
+        <section className="lp-hero">
+          <div className="lp-hero-inner">
+            <div className="lp-badge reveal">
+              <span className="lp-badge-dot" />
+              Full-Stack Personal Finance Platform
             </div>
 
-            <h1 className="display hero-title">
-              Take Control of{' '}
-              <span className="gradient-text">Your Money.</span>
-              <br />Finally.
+            <h1 className="lp-display lp-hero-title reveal reveal-d1">
+              Track Every Detail. <br/>
+              <span className="lp-grad">Spend Smarter.</span>
             </h1>
 
-            <p className="hero-sub">
-              Track income and expenses, set smart budgets, and visualise your
-              financial health with a beautiful real-time dashboard — all secured
-              with industry-standard authentication.
+            <p className="lp-hero-sub reveal reveal-d2">
+              Log income and expenses, set category budgets, and understand your
+              financial health through a beautiful real-time dashboard —
+              secured with industry-standard authentication.
             </p>
 
-            <div className="hero-cta-row">
-              <Link to="/register" className="btn-cta btn-cta-primary">
-                Start for Free
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 12h14M12 5l7 7-7 7" />
+            <div className="lp-btn-row reveal reveal-d3">
+              <Link to="/register" className="lp-btn lp-btn-primary">
+                Start Tracking Free
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
               </Link>
-              <Link to="/login" className="btn-cta btn-cta-outline">
-                Sign In
-              </Link>
+              <Link to="/login" className="lp-btn lp-btn-outline">Sign In to Account</Link>
             </div>
 
-            {/* Browser mockup */}
-            <div className="mockup reveal">
-              <div className="mockup-bar">
-                <div className="mockup-dot" style={{ background: '#ef4444' }} />
-                <div className="mockup-dot" style={{ background: '#f59e0b' }} />
-                <div className="mockup-dot" style={{ background: '#22c55e' }} />
-                <div className="mockup-url">localhost:5173/dashboard</div>
+            {/* Mockup */}
+            <div className="lp-mockup reveal reveal-d4">
+              <div className="lp-mockup-bar">
+                <div className="lp-mockup-dot" style={{ background: '#e2e8f0' }} />
+                <div className="lp-mockup-dot" style={{ background: '#e2e8f0' }} />
+                <div className="lp-mockup-dot" style={{ background: '#e2e8f0' }} />
+                <div className="lp-mockup-url">app.financetracker.com/dashboard</div>
               </div>
-              <div className="mockup-body">
-                <div className="mock-card">
-                  <div className="mock-card-label">Total Income</div>
-                  <div className="mock-card-value" style={{ color: '#22c55e' }}>LKR 150K</div>
-                  <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '6px' }}>↑ 3 transactions</div>
+              <div className="lp-mockup-body">
+                <div className="lp-mc">
+                  <div className="lp-mc-label">Total Income</div>
+                  <div className="lp-mc-value">LKR 150K</div>
+                  <div className="lp-mc-sub" style={{ color: '#10b981' }}>↑ 3 transactions</div>
                 </div>
-                <div className="mock-card">
-                  <div className="mock-card-label">Total Expenses</div>
-                  <div className="mock-card-value" style={{ color: '#ef4444' }}>LKR 42K</div>
-                  <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '6px' }}>↓ 8 transactions</div>
+                <div className="lp-mc">
+                  <div className="lp-mc-label">Total Expenses</div>
+                  <div className="lp-mc-value">LKR 42K</div>
+                  <div className="lp-mc-sub" style={{ color: '#f43f5e' }}>↓ 8 transactions</div>
                 </div>
-                <div className="mock-card">
-                  <div className="mock-card-label">Net Balance</div>
-                  <div className="mock-card-value" style={{ color: '#818cf8' }}>LKR 108K</div>
-                  <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '6px' }}>This month</div>
+                <div className="lp-mc">
+                  <div className="lp-mc-label">Net Balance</div>
+                  <div className="lp-mc-value" style={{ color: '#0ea5e9' }}>LKR 108K</div>
+                  <div className="lp-mc-sub" style={{ color: '#64748b' }}>This month</div>
                 </div>
-                <div className="mock-card">
-                  <div className="mock-card-label">Active Budgets</div>
-                  <div className="mock-card-value" style={{ color: '#f59e0b' }}>4</div>
-                  <div style={{ fontSize: '11px', color: '#ef4444', marginTop: '6px' }}>1 exceeded</div>
+                <div className="lp-mc">
+                  <div className="lp-mc-label">Active Budgets</div>
+                  <div className="lp-mc-value">4</div>
+                  <div className="lp-mc-sub" style={{ color: '#f59e0b' }}>1 near limit</div>
                 </div>
-                <div className="mock-bar-wrap">
-                  <div className="mock-bar-label">Budget vs Actual</div>
+                
+                <div className="lp-mc-wide">
+                  <div className="lp-mc-label" style={{ marginBottom: '16px', color: '#000' }}>Budget vs Actual</div>
                   {[
-                    { name: 'Food',       pct: 72,  color: '#f97316' },
-                    { name: 'Transport',  pct: 45,  color: '#f59e0b' },
-                    { name: 'Rent',       pct: 100, color: '#ef4444' },
-                    { name: 'Shopping',   pct: 30,  color: '#ec4899' },
+                    { name: 'Food', pct: 72, color: '#0ea5e9' },
+                    { name: 'Transport', pct: 45, color: '#0f172a' },
+                    { name: 'Rent', pct: 100, color: '#f43f5e' },
+                    { name: 'Shopping', pct: 30, color: '#94a3b8' },
                   ].map((b) => (
-                    <div key={b.name} className="mock-bar-row">
-                      <div className="mock-bar-name">{b.name}</div>
-                      <div className="mock-bar-track">
-                        <div
-                          className="mock-bar-fill"
-                          style={{ width: `${b.pct}%`, background: b.color }}
-                        />
+                    <div key={b.name} className="lp-bar-row">
+                      <div className="lp-bar-name">{b.name}</div>
+                      <div className="lp-bar-track">
+                        <div className="lp-bar-fill" style={{ width: `${b.pct}%`, background: b.color }} />
                       </div>
-                      <div style={{ fontSize: '11px', color: '#94a3b8', width: '32px', textAlign: 'right' }}>
-                        {b.pct}%
-                      </div>
+                      <div className="lp-bar-pct">{b.pct}%</div>
                     </div>
                   ))}
                 </div>
-                <div className="mock-bar-wrap">
-                  <div className="mock-bar-label">Monthly Trend</div>
-                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', height: '80px', paddingBottom: '4px' }}>
+                
+                <div className="lp-mc-wide">
+                  <div className="lp-mc-label" style={{ marginBottom: '14px', color: '#000' }}>Monthly Trend</div>
+                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', height: '80px' }}>
                     {[
-                      { h: 40, c: '#6366f1' }, { h: 55, c: '#6366f1' },
-                      { h: 35, c: '#6366f1' }, { h: 70, c: '#6366f1' },
-                      { h: 50, c: '#6366f1' }, { h: 80, c: '#818cf8' },
-                      { h: 30, c: '#ef4444' }, { h: 45, c: '#ef4444' },
-                      { h: 60, c: '#ef4444' }, { h: 25, c: '#ef4444' },
-                      { h: 70, c: '#ef4444' }, { h: 55, c: '#ef4444' },
-                    ].map((bar, i) => (
-                      <div
-                        key={i}
-                        style={{
-                          flex: 1,
-                          height: `${bar.h}%`,
-                          background: bar.c,
-                          borderRadius: '4px 4px 0 0',
-                          opacity: 0.8,
-                        }}
-                      />
+                      [40, '#e2e8f0'], [55, '#e2e8f0'], [35, '#e2e8f0'], [70, '#e2e8f0'],
+                      [50, '#e2e8f0'], [80, '#0ea5e9'], [30, '#0f172a'], [45, '#0f172a'],
+                      [60, '#0f172a'], [25, '#0f172a'], [70, '#0f172a'], [55, '#0f172a'],
+                    ].map(([h, c], i) => (
+                      <div key={i} style={{ flex: 1, height: `${h}%`, background: c, borderRadius: '4px 4px 0 0' }} />
                     ))}
                   </div>
-                  <div style={{
-                    display: 'flex', justifyContent: 'space-between',
-                    fontSize: '10px', color: '#475569', marginTop: '6px',
-                  }}>
-                    {['J','F','M','A','M','J','J','A','S','O','N','D'].map((m) => (
-                      <span key={m}>{m}</span>
-                    ))}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#94a3b8', marginTop: '8px' }}>
+                    {['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'].map((m, i) => <span key={i}>{m}</span>)}
                   </div>
                 </div>
               </div>
@@ -788,147 +342,119 @@ const Landing = () => {
           </div>
         </section>
 
-        {/* ── Stats Strip ── */}
-        <div className="stats-strip">
+        {/* STATS */}
+        <div className="lp-stats">
           {stats.map((s, i) => (
-            <div key={i} className="stat-item reveal" style={{ transitionDelay: `${i * 0.1}s` }}>
-              <div className="stat-value">{s.value}</div>
-              <div className="stat-label">{s.label}</div>
+            <div key={i} className="lp-stat reveal" style={{ transitionDelay: `${i * .1}s` }}>
+              <div className="lp-stat-val">{s.value}</div>
+              <div className="lp-stat-label">{s.label}</div>
             </div>
           ))}
         </div>
 
-        {/* ── Features ── */}
-        <section className="section" id="features">
-          <p className="section-label reveal">Features</p>
-          <h2 className="heading section-title reveal reveal-d1">
-            Everything you need to{' '}
-            <span className="gradient-text">manage finances</span>
+        {/* FEATURES */}
+        <section className="lp-sec" id="features">
+          <div className="lp-sec-tag reveal">Platform Features</div>
+          <h2 className="lp-heading lp-sec-title reveal reveal-d1">
+            Everything you need to manage <span className="lp-grad">wealth.</span>
           </h2>
-          <p className="section-sub reveal reveal-d2">
-            A complete full-stack solution — from authentication to analytics —
-            built with a clean architecture designed to scale.
+          <p className="lp-sec-sub reveal reveal-d2">
+            A complete full-stack solution built with clean architecture, 
+            designed to scale and perform effortlessly.
           </p>
-
-          <div className="features-grid">
+          <div className="lp-feat-grid">
             {features.map((f, i) => (
-              <div
-                key={i}
-                className={`feature-card reveal reveal-d${Math.min(i + 1, 5)}`}
-              >
-                <span className="feature-icon">{f.icon}</span>
-                <h3 className="feature-title">{f.title}</h3>
-                <p className="feature-desc">{f.description}</p>
+              <div key={i} className={`lp-feat-card reveal reveal-d${Math.min(i + 1, 5)}`}>
+                <div className="lp-feat-icon" style={{ background: f.color, color: f.iconColor }}>
+                  {f.icon}
+                </div>
+                <div className="lp-feat-title">{f.title}</div>
+                <div className="lp-feat-desc">{f.description}</div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* ── Tech Stack ── */}
-        <section
-          id="stack"
-          style={{
-            background: 'var(--bg2)',
-            borderTop: '1px solid var(--border)',
-            borderBottom: '1px solid var(--border)',
-            padding: '80px 24px',
-          }}
-        >
-          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            <p className="section-label reveal">Tech Stack</p>
-            <h2 className="heading section-title reveal reveal-d1">
-              Built with modern,{' '}
-              <span className="gradient-text">production-grade</span> tools
+        {/* HOW IT WORKS */}
+        <section id="how" style={{ background: '#f8fafc', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0', padding: '100px 24px' }}>
+          <div style={{ maxWidth: '1160px', margin: '0 auto' }}>
+            <div className="lp-sec-tag reveal">How it works</div>
+            <h2 className="lp-heading lp-sec-title reveal reveal-d1">
+              Up and running in <span className="lp-grad">4 simple steps</span>
             </h2>
-            <p className="section-sub reveal reveal-d2">
+            <p className="lp-sec-sub reveal reveal-d2">
+              No complex setup. Register, add transactions, set budgets,
+              and your dashboard comes alive immediately.
+            </p>
+            <div className="lp-steps">
+              {howItWorks.map((s, i) => (
+                <div key={i} className={`lp-step reveal reveal-d${i + 1}`}>
+                  <div className="lp-step-num">{s.step}</div>
+                  <div className="lp-step-title">{s.title}</div>
+                  <div className="lp-step-desc">{s.desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* STACK */}
+        <section className="lp-stack-bg" id="stack" style={{ background: '#ffffff', border: 'none' }}>
+          <div className="lp-stack-inner">
+            <div className="lp-sec-tag reveal">Tech Stack</div>
+            <h2 className="lp-heading lp-sec-title reveal reveal-d1">
+              Built with <span className="lp-grad">production-grade</span> tools
+            </h2>
+            <p className="lp-sec-sub reveal reveal-d2" style={{ margin: '0 auto' }}>
               Every technology choice is deliberate — chosen for performance,
               developer experience, and real-world scalability.
             </p>
-
-            <div className="stack-grid reveal reveal-d3">
+            <div className="lp-chips reveal reveal-d3">
               {stack.map((s, i) => (
-                <div key={i} className="stack-badge">
-                  <div className="stack-dot" style={{ background: s.color }} />
+                <div key={i} className="lp-chip">
+                  <div className="lp-chip-dot" style={{ background: s.dot }} />
                   {s.label}
                 </div>
               ))}
             </div>
+          </div>
+        </section>
 
-            {/* Architecture callout */}
-            <div style={{
-              marginTop: '48px',
-              background: 'var(--card-bg)',
-              border: '1px solid var(--border)',
-              borderRadius: '20px',
-              padding: '32px',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-              gap: '24px',
-              backdropFilter: 'blur(10px)',
-            }}
-              className="reveal reveal-d4"
-            >
-              {[
-                { icon: '⚡', title: 'REST API', desc: '20+ endpoints with proper validation, error handling, and consistent response format' },
-                { icon: '🔐', title: 'JWT Auth',  desc: 'Access + refresh token pattern with HTTP-only cookies and auto-renewal' },
-                { icon: '🧩', title: 'Clean Architecture', desc: 'Separate layers for routes, controllers, services, and models — easy to extend' },
-                { icon: '📦', title: 'MongoDB Atlas', desc: 'Cloud-hosted with Mongoose ODM, indexed queries, and aggregation pipelines' },
-              ].map((item, i) => (
-                <div key={i}>
-                  <div style={{ fontSize: '24px', marginBottom: '10px' }}>{item.icon}</div>
-                  <h4 style={{
-                    fontFamily: 'Syne, sans-serif',
-                    fontWeight: 700,
-                    fontSize: '15px',
-                    margin: '0 0 6px',
-                  }}>
-                    {item.title}
-                  </h4>
-                  <p style={{ fontSize: '13px', color: 'var(--muted)', lineHeight: '1.6', margin: 0, fontWeight: 300 }}>
-                    {item.desc}
-                  </p>
-                </div>
-              ))}
+        {/* CTA */}
+        <section className="lp-cta">
+          <div className="lp-cta-inner reveal">
+            <h2 className="lp-display lp-cta-title">
+              Take control of your money today.
+            </h2>
+            <p className="lp-cta-sub">
+              Create a free account in seconds. Default categories are set up
+              automatically so you can start tracking right away.
+            </p>
+            <div className="lp-btn-row" style={{ marginBottom: 0 }}>
+              <Link to="/register" className="lp-btn lp-btn-primary">
+                Create Free Account
+              </Link>
+              <Link to="/login" className="lp-btn lp-btn-outline">
+                Sign In
+              </Link>
             </div>
           </div>
         </section>
 
-        {/* ── CTA ── */}
-        <section className="cta-section">
-          <div className="cta-orb" />
-          <p className="section-label reveal" style={{ position: 'relative', zIndex: 1 }}>
-            Get Started
-          </p>
-          <h2 className="display cta-title reveal reveal-d1">
-            Ready to track your{' '}
-            <span className="gradient-text">finances?</span>
-          </h2>
-          <p className="cta-sub reveal reveal-d2">
-            Create a free account in seconds. Default categories are set up
-            automatically so you can start adding transactions right away.
-          </p>
-          <div className="cta-btn-row reveal reveal-d3">
-            <Link to="/register" className="btn-cta btn-cta-primary">
-              Create Free Account
-              <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </Link>
-            <Link to="/login" className="btn-cta btn-cta-outline">
-              Sign In
-            </Link>
+        {/* FOOTER */}
+        <footer className="lp-footer">
+          <div className="lp-footer-left">
+            <div className="lp-footer-logo">
+               <Icons.Insights />
+            </div>
+            <span className="lp-footer-name">FinanceTracker</span>
+            <span style={{ fontSize: '13px', color: '#94a3b8', marginLeft: '8px' }}>
+              — Personal Finance App
+            </span>
           </div>
-        </section>
-
-        {/* ── Footer ── */}
-        <footer className="footer">
-          <div className="footer-text">
-            FinanceTracker — Personal Finance & Budget Tracking Application
-          </div>
-          <div className="footer-stack">
-            <span>Built with</span>
-            {['React', 'Express.js', 'MongoDB'].map((t) => (
-              <span key={t} className="footer-tag">{t}</span>
+          <div className="lp-footer-right">
+            {['React', 'Express.js', 'MongoDB', 'Node.js'].map((t) => (
+              <span key={t} className="lp-footer-tag">{t}</span>
             ))}
           </div>
         </footer>
