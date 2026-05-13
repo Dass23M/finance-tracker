@@ -60,7 +60,7 @@ app.use((req, res) => {
   res.status(404).json({ success: false, message: `Route ${req.originalUrl} not found` });
 });
 
-// Global error handler (must be last)
+// Global error handler 
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
