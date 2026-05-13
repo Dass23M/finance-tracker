@@ -1,4 +1,4 @@
-# 💰 FinanceTracker — Personal Finance & Budget Tracking Application
+# 💰 FinanceTracker - Personal Finance & Budget Tracking Application
 
 A full-stack web application for tracking income, expenses, budgets, and financial insights through a structured dashboard.
 
