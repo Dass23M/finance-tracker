@@ -5,9 +5,9 @@ import toast from 'react-hot-toast';
 const AuthContext = createContext(null);
 
 const initialState = {
-  user:          null,
-  accessToken:   localStorage.getItem('accessToken') || null,
-  isLoading:     true,
+  user:            null,
+  accessToken:     localStorage.getItem('accessToken') || null,
+  isLoading:       true,
   isAuthenticated: false,
 };
 
@@ -50,7 +50,7 @@ const authReducer = (state, action) => {
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // On app load — verify token and fetch current user
+  // On app load — verify existing token and restore session
   useEffect(() => {
     const initializeAuth = async () => {
       const token = localStorage.getItem('accessToken');
@@ -65,12 +65,14 @@ export const AuthProvider = ({ children }) => {
           payload: { user: res.data.user, accessToken: token },
         });
       } catch {
+        // Token invalid or expired — clear everything
         dispatch({ type: 'LOGOUT' });
       }
     };
     initializeAuth();
   }, []);
 
+  // ── Login ────────────────────────────────────────────────────────────────
   const login = async (credentials) => {
     const res = await loginUser(credentials);
     dispatch({
@@ -84,24 +86,22 @@ export const AuthProvider = ({ children }) => {
     return res;
   };
 
+  // ── Register ─────────────────────────────────────────────────────────────
+  // IMPORTANT: We do NOT dispatch LOGIN_SUCCESS here.
+  // We do NOT store any token here.
+  // The Register page will navigate to /login after this resolves.
   const register = async (userData) => {
     const res = await registerUser(userData);
-    dispatch({
-      type:    'LOGIN_SUCCESS',
-      payload: {
-        user:        res.data.user,
-        accessToken: res.data.accessToken,
-      },
-    });
-    toast.success(`Account created! Welcome, ${res.data.user.name}!`);
+    // Just return — do nothing else
     return res;
   };
 
+  // ── Logout ───────────────────────────────────────────────────────────────
   const logout = async () => {
     try {
       await logoutUser();
     } catch {
-      // Even if API fails, clear local state
+      // Even if API call fails, clear local state anyway
     } finally {
       dispatch({ type: 'LOGOUT' });
       toast.success('Logged out successfully');

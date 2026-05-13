@@ -41,10 +41,22 @@ const Register = () => {
   useEffect(() => {
     let currentProgress = 0;
     
-    if (watchName?.trim().length >= 2) currentProgress += 25;
-    if (/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(watchEmail || '')) currentProgress += 25;
-    if (watchPassword?.length >= 8) currentProgress += 25;
-    if (watchConfirmPassword?.length >= 8 && watchConfirmPassword === watchPassword) currentProgress += 25;
+    // 25% for a valid name
+    if (watchName?.trim().length >= 2) {
+      currentProgress += 25;
+    }
+    // 25% for a valid email format
+    if (/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(watchEmail || '')) {
+      currentProgress += 25;
+    }
+    // 25% for a valid password length
+    if (watchPassword?.length >= 8) {
+      currentProgress += 25;
+    }
+    // 25% if confirm password matches the valid password
+    if (watchConfirmPassword?.length >= 8 && watchConfirmPassword === watchPassword) {
+      currentProgress += 25;
+    }
 
     setProgress(currentProgress);
   }, [watchName, watchEmail, watchPassword, watchConfirmPassword]);
@@ -57,8 +69,12 @@ const Register = () => {
         email: data.email.trim(),
         password: data.password,
       });
-      toast.success('Account created successfully!');
+      
+      toast.success('Account created successfully! Please log in.');
+      
+      // Redirects strictly to the login page, NOT the dashboard
       navigate('/login');
+      
     } catch (err) {
       const message = err.response?.data?.message || 'Registration failed. Please try again.';
       toast.error(message);
@@ -170,6 +186,10 @@ const Register = () => {
                       value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
                       message: 'Please enter a valid email address',
                     },
+                    maxLength: {
+                      value: 255,
+                      message: 'Email address is too long'
+                    }
                   })}
                 />
                 {errors.email && (
